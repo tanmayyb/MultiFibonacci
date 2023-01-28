@@ -31,7 +31,7 @@ class FibonacciActionServer(Node):
 
     def cancel_callback(self, goal_handle):
         """Accept or reject a client request to cancel an action."""
-        self.get_logger().info('Received cancel request')
+        self.get_logger().warning('Received cancel request')
         return CancelResponse.ACCEPT
 
     def execute_callback(self, goal_handle):
@@ -41,6 +41,12 @@ class FibonacciActionServer(Node):
         feedback_msg.partial_sequence = [0, 1]
 
         for i in range(1, goal_handle.request.order):
+
+            if goal_handle.is_cancel_requested:
+                goal_handle.canceled()
+                self.get_logger().warning('Goal canceled')
+                return Fibonacci.Result()
+
             feedback_msg.partial_sequence.append(i+1)
             self.get_logger().info('Feedback: {0}'.format(feedback_msg.partial_sequence))
             goal_handle.publish_feedback(feedback_msg)

@@ -42,7 +42,6 @@ class miniFibonacciClient(Node):
     def get_result_callback(self, future):
         result = future.result().result
         self.get_logger().info('Result: {0}'.format(result.sequence))
-        rclpy.shutdown()
 
     def feedback_callback(self, feedback_msg):
         feedback = feedback_msg.feedback
@@ -56,7 +55,6 @@ class miniFibonacciClient(Node):
     def cancel_done(self, future):
         cancel_response = future.result()
         if len(cancel_response.goals_canceling) > 0:
-            self.get_logger().info('Goal successfully canceled')
+            self.get_logger().warning('Goal successfully canceled')
         else:
             self.get_logger().warning('Goal failed to cancel')
-        
