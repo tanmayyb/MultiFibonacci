@@ -15,7 +15,7 @@ class FibonacciActionServer(Node):
         self._action_server = ActionServer(
             self,
             Fibonacci,
-            'fibonacci',
+            'mini_fibonacci',
             execute_callback=self.execute_callback,
             callback_group=ReentrantCallbackGroup(),
             goal_callback=self.goal_callback,
@@ -26,16 +26,16 @@ class FibonacciActionServer(Node):
     def goal_callback(self, goal_request):
         """Accept or reject a client request to begin an action."""
         # This server allows multiple goals in parallel
-        self.get_logger().info('Received goal request')
+        #self.get_logger().info('Received goal request')
         return GoalResponse.ACCEPT
 
     def cancel_callback(self, goal_handle):
         """Accept or reject a client request to cancel an action."""
-        self.get_logger().warning('Received cancel request')
+        self.get_logger().error('Received cancel request')
         return CancelResponse.ACCEPT
 
     def execute_callback(self, goal_handle):
-        self.get_logger().info('Executing goal...')
+        self.get_logger().warning('Executing goal of order %d' %(goal_handle.request.order,))
 
         feedback_msg = Fibonacci.Feedback()
         feedback_msg.partial_sequence = [0, 1]
@@ -56,6 +56,7 @@ class FibonacciActionServer(Node):
 
         result = Fibonacci.Result()
         result.sequence = feedback_msg.partial_sequence
+        self.get_logger().warning('Result: {0}'.format(feedback_msg.partial_sequence))
         return result
 
 

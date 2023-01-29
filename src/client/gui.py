@@ -3,7 +3,7 @@ from threading import *
 from window import *
 import random, rclpy
 from rclpy.executors import MultiThreadedExecutor
-from client_node import miniFibonacciClient
+from client_node import *
 
 
 class gui(Thread):
@@ -44,7 +44,7 @@ class gui(Thread):
 
     def setup_nodes(self):
 
-        self.action_client = miniFibonacciClient()
+        self.action_client = multiFiboClient()
 
         """
         Threading

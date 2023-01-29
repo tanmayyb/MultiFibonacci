@@ -5,7 +5,7 @@ from rclpy.action import ActionClient
 from std_msgs.msg import String
 from action_tutorials_interfaces.action import Fibonacci
 
-class miniFibonacciClient(Node):
+class multiFiboClient(Node):
 
     def __init__(self):
         super().__init__('fibonacci_action_client')
@@ -16,7 +16,17 @@ class miniFibonacciClient(Node):
 
         self.goal_handle = None
 
+        self.goal_queue = []
+
         print("client created")
+
+
+    def add_goal(self, order):
+        goal_msg = Fibonacci.Goal()
+        goal_msg.order = order
+
+
+
 
     def send_goal(self, order):
         goal_msg = Fibonacci.Goal()
