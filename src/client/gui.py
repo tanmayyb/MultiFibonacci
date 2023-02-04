@@ -1,9 +1,12 @@
 from tkinter import *
 from threading import *
-from window import *
-import random, rclpy
+import random
+
+import rclpy
 from rclpy.executors import MultiThreadedExecutor
-from client_node import *
+
+from window import *
+from node import *
 
 
 class gui(Thread):
@@ -17,51 +20,78 @@ class gui(Thread):
 
         rclpy.init(args=None)
         self.setup_nodes()
-        
-        print("gui initialised")
+
+        print("[INFO] [gui]: Gui Ready...")
 
 
     def setup_window(self):
          # Window setup
-        self.window.title("cancel action gui")
+        self.window.title("multifibonacci control gui")
         self.window.geometry(SETUP_STRING)
 
     def draw_gui(self):
-        button1 = Button(
-            self.window, 
-            text = "send action", 
-            command=lambda: self.send_action(), 
-        )
-
-        button2 = Button(
+        self.draw_labels()
+        self.draw_text_fields()
+        self.draw_buttons()
+    
+    def draw_labels(self):
+        self.label1 = Label(
             self.window,
-            text = "cancel all actions",
-            command=lambda: self.cancel_goal(), 
+            text="# of goals:")
+
+        self.label1.grid(
+            row=1,
+            column=1, 
+            columnspan=2,
+            sticky='W')
+
+
+    def draw_buttons(self):
+        self.button1 = Button(
+            self.window, 
+            text = "Execute Multifibo", 
+            command=lambda: self.send_action(self.text_field1_input.get()), 
         )
 
-        button1.grid(row=0,column=0, sticky='E')
-        button2.grid(row=1,column=0, sticky='E')
+        self.button2 = Button(
+            self.window,
+            text = "Cancel Multifibo",
+            command=lambda: self.cancel_all_goals(), 
+        )
+
+        self.button1.grid(row=2,column=3, sticky='W')
+        self.button2.grid(row=3,column=3, sticky='W')
+
+    def draw_text_fields(self):
+        default_text_field1_input = 5
+        self.text_field1_input = StringVar()
+        self.text_field1_input.set(default_text_field1_input)
+        self.text_field1 = Entry(
+            self.window,
+            width=5,
+            textvariable=self.text_field1_input)
+
+        self.text_field1.grid(row=1,column=3, sticky='W')
+        
+
 
     def setup_nodes(self):
-
-        self.action_client = multiFiboClient()
-
-        """
-        Threading
-        """
         self.executor = MultiThreadedExecutor()
-        self.executor.add_node(self.action_client)
+
+        
+        self.multifibo_client = multiFiboClient()
+        self.executor.add_node(self.multifibo_client)
+        
+        
         self.executor_thread = Thread(
             target=self.executor.spin)
         self.executor_thread.start()
 
 
-    def send_action(self):
-        num = random.randrange(7, 12, 2)
-        print("sending %d to server", num)
-        self.action_client.send_goal(num)
+    def send_action(self, order):
+        self.multifibo_client.prep_and_send_goals_of_order(int(order))
 
-    def cancel_goal(self):
-        goal_id = self.action_client.cancel_goal()
+    def cancel_all_goals(self):
+        self.multifibo_client.cancel_all_goals()
 
         

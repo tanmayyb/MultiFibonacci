@@ -10,7 +10,7 @@ def main(args= None):
     app = gui(root)
     #app.daemon = True
 
-    print("gui launched")
+    #print("gui launched")
     root.mainloop()
     #gui.stop()
 

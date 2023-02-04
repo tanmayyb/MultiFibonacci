@@ -20,10 +20,11 @@ class multiFiboClient(Node):
         self.goal_handle = None
         self.goal_queue = []
         self.goal_queue_last_index = -1
+        self.gid = 0
         self.get_logger().info("multifibo action manager created")
 
 
-        self.req_stop_all_actions = False
+        # self.req_stop_all_actions = False
 
 
         self.get_logger().info("creating goals")
@@ -32,35 +33,25 @@ class multiFiboClient(Node):
         self.add_goal_to_queue(5)
         self.add_goal_to_queue(6)
         self.add_goal_to_queue(7)
-
-        # self.pop_all_goals()
-
-        self.get_logger().warning("executing goals")
+        self.add_goal_to_queue(8)
+        self.add_goal_to_queue(9)
+        self.get_logger().info("loaded {0} goals in queue".format(len(self.goal_queue)))
+        
         self.execute_all_goals_in_queue()    
-
     
-        #make into services
 
-        # self.sub1 = self.create_subscription(
-        #     self, 
-        #     Int32,
-        #     'add_point_to_queue',
-        #     self.add_point_,
-        #     10)
 
-        # self.sub2 = self.create_subscription(
-        #     self, 
-        #     Int32,
-        #     'delete_sing_point',
-        #     )
+    # def load_goals_and_execute_multifibo(self, msg):
+    #     goals = msg.data
 
-        # self.sub3 = self.create_subscription(
-        #     self,
-        #     Int32,
-        #     'delete_all_points',
-        #     10
-        # )
+    #     self.get_logger().info("creating goals")
+    #     self.reset_goal_queue()
 
+    #     for i in goals:
+    #         self.add_goal_to_queue(i)
+    #     self.get_logger().info("loaded {0} goals in queue".format(len(self.goal_queue)))
+
+    #     self.execute_all_goals_in_queue()
 
 
     def add_goal_to_queue(self, order):
@@ -70,13 +61,13 @@ class multiFiboClient(Node):
         self.goal_queue.append(goal_msg)
         self.goal_queue_last_index=self.goal_queue_last_index+1
 
-    def pop_goal_from_front(self):
-        self.goal_queue.pop(0)
-        self.goal_queue_last_index=self.goal_queue_last_index-1
+    # def pop_goal_from_front(self):
+    #     self.goal_queue.pop(0)
+    #     self.goal_queue_last_index=self.goal_queue_last_index-1
 
-    def pop_goal_from_back(self):
-        self.goal_queue.pop(self.goal_queue_last_index)
-        self.goal_queue_last_index=self.goal_queue_last_index-1
+    # def pop_goal_from_back(self):
+    #     self.goal_queue.pop(self.goal_queue_last_index)
+    #     self.goal_queue_last_index=self.goal_queue_last_index-1
 
     def pop_all_goals(self):
         self.get_logger().info("popping all goals")
@@ -85,30 +76,30 @@ class multiFiboClient(Node):
         self.goal_queue_last_index = -1
         self.get_logger().info("all goals popped")
 
+    def reset_goal_queue(self):
+        self.goal_queue = []
+        self.gid = 0
+        self.goal_queue_last_index = -1 
 
     def execute_all_goals_in_queue(self):
-        #self.req_stop_all_actions
-        for i in self.goal_queue:
-            self.get_logger().info('just sent %d' % (i.order,))
-            self.send_goal(i)
-            print("goal sent")
-            self.current_goal_has_finished = False
-            time.sleep(5)
+        while not self._action_client.wait_for_server(timeout_sec=1.0):
+            self.get_logger().info('waiting for server to become available...')
 
+        if self.gid<=self.goal_queue_last_index:
+            goal = self.goal_queue[self.gid]
+            print(self.gid, goal)
+            self.get_logger().warning('sending fibonacci goal of order: %d' % (goal.order,))
+            self.send_goal(goal)
 
-            # while(not self.current_goal_has_finished):
-            #     print("in da loop")
-            #     if(self.req_stop_all_actions):
-            #             pass
-
-        self.pop_all_goals()
+        else:
+            self.get_logger().warning('all goals successfully completed: %d' % (goal.order,))
+            self.pop_all_goals()
 
 
     def send_goal(self, goal):
         send_goal_future = self._action_client.send_goal_async(
             goal, 
             feedback_callback=self.feedback_callback)
-
         send_goal_future.add_done_callback(self.goal_response_callback)
 
     def goal_response_callback(self, future):
@@ -125,24 +116,26 @@ class multiFiboClient(Node):
 
     def get_result_callback(self, future):
         result = future.result().result
-        self.get_logger().info('Result: {0}'.format(result.sequence))
-        self.current_goal_has_finished = True
+        self.get_logger().warning('Result: {0}'.format(result.sequence))
+        
+        self.gid = self.gid + 1
+        self.execute_all_goals_in_queue()
 
     def feedback_callback(self, feedback_msg):
         feedback = feedback_msg.feedback
         print(':{0}'.format(feedback.partial_sequence))
 
-    def cancel_goal(self):
-        cancel_future  = self._goal_handle.cancel_goal_async() #requesting cancel
-        print("tryna cancel")
-        cancel_future.add_done_callback(self.cancel_done)
+    # def cancel_goal(self):
+    #     cancel_future  = self._goal_handle.cancel_goal_async() #requesting cancel
+    #     print("tryna cancel")
+    #     cancel_future.add_done_callback(self.cancel_done)
 
-    def cancel_done(self, future):
-        cancel_response = future.result()
-        if len(cancel_response.goals_canceling) > 0:
-            self.get_logger().warning('Goal successfully canceled')
-        else:
-            self.get_logger().warning('Goal failed to cancel')
+    # def cancel_done(self, future):
+    #     cancel_response = future.result()
+    #     if len(cancel_response.goals_canceling) > 0:
+    #         self.get_logger().warning('Goal successfully canceled')
+    #     else:
+    #         self.get_logger().warning('Goal failed to cancel')
 
 
 
