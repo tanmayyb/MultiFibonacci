@@ -1,6 +1,6 @@
 # MultiFibonacci
 
-![ss_multifibo](https://user-images.githubusercontent.com/72982560/216749727-6e8a5c1e-8cfa-43fd-9b56-f883d855cc1d.png)
+![multifibonacci_architecture](https://user-images.githubusercontent.com/72982560/216751836-d4d1c493-03b6-42e0-a81a-2875c7e6dbad.jpg)
 
 
 This repo demonstrates a ROS2-Python Action Manager GUI to chain/sequence/control ROS2 actions. This `Multifibonacci Action Manager` will sequence smaller `Fibonacci` actions which are a part of `example_interfaces` in ROS2. This is useful when you want your robot to do complex behaviour like walk in a circle. Patrol an area. Etc. 
@@ -26,5 +26,6 @@ and, this:
 ```
 python3 minifibo_server.py
 ```
-</br>
-You should be able to chain the `Fibonacci` actions and cancel them graphically.
+You should be able to chain the `Fibonacci` actions and cancel them graphically. As shown below: </br>
+
+![ss_multifibo](https://user-images.githubusercontent.com/72982560/216749727-6e8a5c1e-8cfa-43fd-9b56-f883d855cc1d.png)
